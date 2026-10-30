@@ -77,4 +77,4 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.gokhangeo.bulutsuz.share
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
-        APPLICATION_EXTENSION_API_ONLY: "NO"
+        APPLICATION_EXTENSION_API_ONLY: "YES"
