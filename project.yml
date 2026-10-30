@@ -1,0 +1,80 @@
+name: Bulutsuz
+options:
+  bundleIdPrefix: com.gokhangeo
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  WebRTC:
+    url: https://github.com/stasel/WebRTC
+    exactVersion: "137.0.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_ALLOWED: "NO"
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: ""
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  Bulutsuz:
+    type: application
+    platform: iOS
+    sources:
+      - Sources/Core
+      - Sources/App
+    dependencies:
+      - package: WebRTC
+      - target: BulutsuzShare
+    scheme: {}
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleDisplayName: Bulutsuz
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        NSCameraUsageDescription: Gönderen cihazdaki QR kodu okumak için kamera kullanılır.
+        NSLocalNetworkUsageDescription: Aynı ağdaki cihazlara dosyayı doğrudan, buluta yüklemeden göndermek için yerel ağ kullanılır.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gokhangeo.bulutsuz
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  BulutsuzShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Sources/Core
+      - Sources/ShareExtension
+    dependencies:
+      - package: WebRTC
+        embed: false
+    info:
+      path: Sources/ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: Bulutsuz
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsFileWithMaxCount: 30
+              NSExtensionActivationSupportsImageWithMaxCount: 30
+              NSExtensionActivationSupportsMovieWithMaxCount: 30
+              NSExtensionActivationSupportsText: true
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gokhangeo.bulutsuz.share
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+        APPLICATION_EXTENSION_API_ONLY: "NO"
