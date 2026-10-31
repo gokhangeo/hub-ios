@@ -38,6 +38,8 @@ final class HubSession: ObservableObject {
     @Published private(set) var myCode = ""
     @Published private(set) var qrLink = ""
     @Published private(set) var rows: [TransferRow] = []
+    /// True while waiting for files through a "Dosya iste" link.
+    @Published private(set) var isRequest = false
     /// Set when a device typed our code (no QR key) and waits for "Kabul et".
     @Published var approvalRequest: String?
 
@@ -97,6 +99,19 @@ final class HubSession: ObservableObject {
         signal.start(id: code)
     }
 
+    /// "Dosya iste": host a session whose link lets someone without the app send us files from a browser.
+    func startRequest() {
+        reset()
+        mode = .sending
+        isRequest = true
+        sessionKey = Hub.generateSessionKey()
+        let code = Hub.generateCode()
+        myCode = code
+        qrLink = Hub.requestLink(code: code, key: sessionKey)
+        setStatus("Sinyal sunucusuna bağlanılıyor…")
+        signal.start(id: code)
+    }
+
     /// Connect to a sender by its 6-digit code (asks the sender to accept) or QR (with key).
     func connect(code: String, key: String) {
         reset()
@@ -134,7 +149,9 @@ final class HubSession: ObservableObject {
     // MARK: Signalling
 
     private func signalOpened() {
-        if mode == .sending {
+        if mode == .sending && isRequest {
+            setStatus("Linki gönder. Karşı taraf açıp dosyayı seçince buraya gelecek.")
+        } else if mode == .sending {
             setStatus("Hazır. QR'ı okut ya da kodu gir: \(Hub.displayCode(myCode))")
         } else if mode == .receiving, let target = target {
             setStatus("\(Hub.displayCode(target.code)) koduna bağlanılıyor…")
@@ -151,7 +168,8 @@ final class HubSession: ObservableObject {
         let connectionId = payload["connectionId"] as? String ?? ""
         switch type {
         case "ID-TAKEN":
-            if mode == .sending { startSending(queue) }
+            if isRequest { startRequest() }
+            else if mode == .sending { startSending(queue) }
             else if let t = target { connect(code: t.code, key: t.key) }
         case "INVALID-KEY", "ERROR":
             setStatus("Sinyal sunucusu hata verdi. Biraz sonra yeniden deneyin.", error: true)
@@ -273,7 +291,7 @@ final class HubSession: ObservableObject {
     private func activate(_ link: PeerLink) {
         active = link
         connected = true
-        setStatus(mode == .sending ? "✓ Alıcı bağlandı" : "✓ Bağlandı. Dosyalar bekleniyor…")
+        setStatus(isRequest ? "✓ Karşı taraf bağlandı. Dosyayı seçmesi bekleniyor…" : mode == .sending ? "✓ Alıcı bağlandı" : "✓ Bağlandı. Dosyalar bekleniyor…")
         // Close any other half-open candidates.
         for (_, other) in links where other !== link { drop(other) }
     }
@@ -506,6 +524,7 @@ final class HubSession: ObservableObject {
         queue.removeAll()
         target = nil
         rows.removeAll()
+        isRequest = false
         qrLink = ""
         myCode = ""
         signal.stop()

@@ -69,6 +69,13 @@ enum Hub {
         return comps.url!.absoluteString
     }
 
+    /// "Dosya iste" link: whoever opens it in a browser picks a file and it comes to us. ?send=BT-123456&k=KEY
+    static func requestLink(code: String, key: String) -> String {
+        var comps = URLComponents(string: pwaBase)!
+        comps.queryItems = [URLQueryItem(name: "send", value: code), URLQueryItem(name: "k", value: key)]
+        return comps.url!.absoluteString
+    }
+
     /// Accepts a full link (receive= or join=, optional k=) or a bare code.
     static func parse(_ text: String) -> (code: String, key: String)? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)

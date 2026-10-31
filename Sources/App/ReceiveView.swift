@@ -37,7 +37,28 @@ struct ReceiveView: View {
                             }
                         Text("Kodla bağlanınca gönderen bir kez “Kabul et”e dokunur. QR ile onay gerekmez.")
                             .font(.caption).foregroundColor(.secondary).multilineTextAlignment(.center)
+                        Divider().padding(.vertical, 4)
+                        Button { session.startRequest() } label: {
+                            Label("Dosya iste", systemImage: "tray.and.arrow.down").frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered).controlSize(.large)
+                        Text("Karşı tarafta uygulama yoksa: linki WhatsApp'tan gönder, açıp dosyayı seçince sana gelir.")
+                            .font(.caption).foregroundColor(.secondary).multilineTextAlignment(.center)
                     } else {
+                        if session.isRequest && !session.connected, let url = URL(string: session.qrLink) {
+                            Text("Bu linki dosyayı gönderecek kişiye yolla").font(.headline)
+                            ShareLink(item: url, message: Text("Bana dosya göndermek için bu bağlantıyı aç ve dosyayı seç:")) {
+                                Label("Linki gönder", systemImage: "square.and.arrow.up").frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent).controlSize(.large)
+                            QRCodeImage(text: session.qrLink)
+                                .frame(width: 200, height: 200)
+                                .padding(10)
+                                .background(Color.white)
+                                .cornerRadius(14)
+                            Text("Yanındaysa QR'ı telefon kamerasıyla da okutabilir. Dosya gelene kadar bu ekranı açık tut.")
+                                .font(.caption).foregroundColor(.secondary).multilineTextAlignment(.center)
+                        }
                         StatusBanner(session: session)
                         TransferList(session: session)
                         Button(session.connected ? "Bağlantıyı kapat" : "Vazgeç") {
