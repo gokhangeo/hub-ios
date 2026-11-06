@@ -55,6 +55,7 @@ jobs:
         with:
           name: Bulutsuz-unsigned-ipa
           path: Bulutsuz-unsigned.ipa
+          retention-days: 3
 
       - name: Release'e yükle
         uses: softprops/action-gh-release@v2
